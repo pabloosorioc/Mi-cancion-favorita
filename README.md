@@ -1,4 +1,3 @@
-
 ## Mi canción favorita
 
 # Contexto
@@ -7,33 +6,33 @@ En el ramo de Medición y análisis dimensional de datos políticos nos dieron u
 
 # Tarea 1:
 
-Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para su conocimiento, tengo una playlist de canciones que considero como favoritas, pero no la tengo ordenada bajo ningún parámetro. 
+Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para su conocimiento, tengo una playlist de canciones que considero como favoritas, pero no la tengo ordenada bajo ningún parámetro.
 
 Primero, cargaremos las librerías que utilizaré:
 
-
-```R
+``` r
 library(tidyverse)
 library(ggplot2)
 library(spotifyr)
 library(dplyr)
-
 ```
+
 Para la configuración de la API de Spotify, es necesario tener una cuenta de desarrollador en Spotify y obtener las credenciales necesarias (Client ID y Client Secret). Una vez que tengas estas credenciales, puedes configurarlas en R de la siguiente manera:
 
-```R
+``` r
 Sys.setenv(SPOTIFY_CLIENT_ID = 'tu_client_id_aqui')
 Sys.setenv(SPOTIFY_CLIENT_SECRET = 'tu_client_secret_aqui')
 ```
+
 Luego, se autentica la sesión con el token de acceso:
 
-```R
+``` r
 access_token <- get_spotify_access_token()
 ```
 
-Con esto, buscamos el ID de la playlist, en este caso, se puede obtener con el link de la playlist en Spotify. 
+Con esto, buscamos el ID de la playlist, en este caso, se puede obtener con el link de la playlist en Spotify.
 
-```R
+``` r
 playlist_id <- "pon el ID de tu playlist aquí"
 
 # Para obtener las canciones
@@ -45,7 +44,7 @@ Este proceso solo me permite obtener resultados para las 100 primeras canciones,
 
 Ahora, quiero saber que artista se repite más dentro de las 100 primeras canciones. Por lo que debo extraer el nombre de los artistas de la Playlist:
 
-```R
+``` r
 lista_artistas <- map(tracks$track.artists, ~ .x$name)
 
 vector_artistas <- unlist(lista_artistas)
@@ -53,7 +52,7 @@ vector_artistas <- unlist(lista_artistas)
 
 Luego, creo una base para contar los artistas que se repiten
 
-```R
+``` r
 conteo_artistas <- data.frame(artista = vector_artistas) |> 
 group_by(artista) |> 
 summarise(canciones = n()) |> 
@@ -62,7 +61,7 @@ arrange(desc(canciones))
 
 Ahora vamos a gráficar el top 10 de los artistas que más se repiten en mi playlist de canciones favoritas:
 
-```R
+``` r
 ggplot(conteo_artistas[1:10, ], aes(x=reorder(artista, canciones), y = canciones))+
      geom_col(fill = "#800020") +
      geom_text(aes(label = canciones), hjust= -0.2, size = 4, family = "Georgia") + 
@@ -83,5 +82,7 @@ ggplot(conteo_artistas[1:10, ], aes(x=reorder(artista, canciones), y = canciones
          plot.background = element_rect(fill = "white", color = NA)
      )
 ```
+
+![](images/clipboard-987643136.png)
 
 Así, con el gráfico vemos que mi artista el artista que más se repite en las primeras 100 canciones de la playlist es A Day To Remember, lo que tiene sentido porque es mi banda favorita desde los 10 años. Si me parece interesante saber como cambiaría con el resto de canciones en la playlist, pero es para la siguiente tarea.
