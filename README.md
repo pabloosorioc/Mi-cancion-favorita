@@ -72,7 +72,7 @@ summarise(canciones = n()) |>
 arrange(desc(canciones))
 ```
 
-Ahora vamos a gráficar el top 10 de los artistas que más se repiten en mi playlist de canciones favoritas:
+Ahora vamos a gráficar el top  de los artistas que más se repiten en mi playlist de canciones favoritas:
 
 ``` r
 ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = canciones)) +
