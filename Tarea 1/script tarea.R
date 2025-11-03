@@ -12,8 +12,8 @@ library(tidyr)
 
 # Configuración SportifyR -------------------------------------------------
 
-Sys.setenv(SPOTIFY_CLIENT_ID = '5362f1cd7c864b9cac910211e4e2101a')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = '64d951af9c864502a11e334b47bd37e2')
+Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxx')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxx')
 
 # Token de acceso ---------------------------------------------------------
 
@@ -22,7 +22,7 @@ access_token <- get_spotify_access_token()
 
 # Obtener datos de la playlis ---------------------------------------------
 
-playlist_id <- "74K2s9BYNZgJiaKUwJciCL"
+playlist_id <- "xxxxxxxxxxx"
 
 #Intento para obtener todas las canciones de la playlist
 
