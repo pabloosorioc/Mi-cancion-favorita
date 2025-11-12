@@ -1,0 +1,117 @@
+## Librerías
+
+```{r}
+library(tidyverse)
+library(treemapify)
+library(RColorBrewer)
+```
+
+# Unir todas las bases del historial de escuchas de Spotify
+
+```{r}
+ruta_historial <- "input"
+
+archivos_historial <- list.files(ruta_historial, pattern = "*.csv", full.names = TRUE)
+
+historial <- archivos_historial |> 
+  map_dfr(read_csv)
+```
+
+# Llamar a la otra base de datos con la información de la playlist
+
+```{r}
+playlist <- read_csv("input/canciones_playlist.csv")
+
+# Dejar solo el nombre de las canciones
+
+playlist <- playlist |> 
+  select(track.name)
+```
+
+# Ahora filtramos las canciones de la playlist con las canciones del historial
+
+```{r}
+historial_playlist <- historial |> 
+  filter(`master_metadata_track_name` %in% playlist$track.name)
+```
+
+# Y hacemos el conteo oficial
+
+```{r}
+recuento <- historial_playlist |> 
+  group_by(master_metadata_track_name) |> 
+  summarise(
+    reproducciones = n(),
+    artista = first(master_metadata_album_artist_name)
+  ) |> 
+  arrange(desc(reproducciones))
+
+write_csv(recuento, "data/recuento_playlist.csv")
+```
+
+# Gráficos <3
+
+```{r}
+# Canciones más escuchadas
+
+recuento |> 
+  arrange(desc(reproducciones)) |>
+  head(15) |> 
+  ggplot(aes(x = reorder(master_metadata_track_name, reproducciones), y = reproducciones)) +
+  geom_col(fill = "#800020") + 
+  coord_flip() +
+  geom_label(aes(label = artista),
+             hjust = 1.05,
+             size = 3,
+             color = "white",
+             fill = "black",
+             label.size = 0) +
+  geom_text(aes(label = reproducciones), 
+            hjust = -0.2,
+            size = 3.5) +
+  labs(
+    title = "Canciones más escuchadas de la playlist <3",
+    x = "Canción",
+    y = "Número de reproducciones"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 16),
+    plot.title.position = "plot"
+  )
+
+ggsave("output/canciones_mas_escuchadas_playlist.png", width = 8, height = 6)
+```
+
+```{r}
+
+# Artistas con más reproducciones
+
+recuento |> 
+  group_by(artista) |> 
+  summarise(total_reproducciones = sum(reproducciones)) |> 
+  arrange(desc(total_reproducciones)) %>%
+  head(15) %>%
+  ggplot(aes(x = reorder(artista, total_reproducciones),
+             y = total_reproducciones)) +
+  geom_col(fill = "#800020") +
+  coord_flip() +
+  geom_text(aes(label = total_reproducciones),
+            hjust = -0.2,
+            size = 3.5) +
+  labs(
+    title = "🎤 Artistas más reproducidos de la playlist",
+    x = "Artista",
+    y = "Total de reproducciones"
+  ) +
+  theme_minimal(base_family = "Calibri") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 16)
+  )
+ggsave("output/artistas_mas_reproducidos_playlist.png", width = 9, height = 6)
+```
+
+
+
+
