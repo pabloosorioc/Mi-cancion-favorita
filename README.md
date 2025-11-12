@@ -130,3 +130,14 @@ ggsave("output/artistas_mas_reproducidos_playlist.png", width = 9, height = 6)
 
 Dando como resultado lo siguiente:
 
+<img width="2400" height="1800" alt="canciones_mas_escuchadas_playlist" src="https://github.com/user-attachments/assets/0af71a44-df98-4112-8ee4-6157c3d72d99" />
+
+En este primer gráfico podemos ver que la canción más reproducida es All I Want de A Day To Remember, seguido por The Middle de Jimmy Eat World y HUMBLE. de Kendrick Lamar. Aclarar que estos datos son solo desde que tengo Spotify (2016 a la fecha), ya vamos viendo un top bastante consolidado solo en base a reproducción.
+
+<img width="2700" height="1800" alt="artistas_mas_reproducidos_playlist" src="https://github.com/user-attachments/assets/85b6c951-e3fa-4e15-9cd9-5f54eb1eee1a" />
+
+Ahora, en este gráfico ya podemos ver algo similar al gráfico de la Tarea 1, donde mi artista más escuchado de la Playlist es A Day To Remember, lo cual no me sorprende para nada. Si me sorprende que Noah Kahan se haya colado al top 3, siendo que es un artista relativamente nuevo (lo escucho desde 2020, antes que se hiciera famosillo) logró superar a ídolas del pop como Taylos Swift y Ariana Grande. Creo que si hubiese tenido Spotify antes Paramore, Pierce The Veil y Twenty One Pilots estarían mucho más arriba, pero nada que hacerle.
+
+Ya estoy cerca de definir cual es mi canción favorita. Para la tarea 3 planeo sumarle más variables al análisis con el objetivo final de ordenar esta playlist desde la que más me gusta para abajo.
+
+
