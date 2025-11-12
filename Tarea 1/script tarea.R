@@ -85,4 +85,4 @@ ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = cancion
     plot.background = element_rect(fill = "grey", color = NA)
   )
 
-  
+

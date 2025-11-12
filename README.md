@@ -4,99 +4,129 @@
 
 En el ramo de Medición y análisis dimensional de datos políticos nos dieron una tarea para mostrar nuestro aprendizaje en R. Como la tarea era de temática libre se me ocurrió determinar cual es mi canción favorita.
 
-# Tarea 1:
-
-Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para su conocimiento, tengo una playlist de canciones que considero como favoritas, pero no la tengo ordenada bajo ningún parámetro.
-
-Primero, cargaremos las librerías que utilizaré:
-
-``` r
-library(tidyverse)
-library(ggplot2)
-library(spotifyr)
-library(dplyr)
-library(purrr)
-```
-
-Para la configuración de la API de Spotify, es necesario tener una cuenta de desarrollador en Spotify y obtener las credenciales necesarias (Client ID y Client Secret). Una vez que tengas estas credenciales, puedes configurarlas en R de la siguiente manera:
-
-``` r
-Sys.setenv(SPOTIFY_CLIENT_ID = 'tu_client_id_aqui')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = 'tu_client_secret_aqui')
-```
-
-Luego, se autentica la sesión con el token de acceso:
-
-``` r
-access_token <- get_spotify_access_token()
-```
-
-Con esto, buscamos el ID de la playlist, en este caso, se puede obtener con el link de la playlist en Spotify.
-
-``` r
-playlist_id <- "pon el ID de tu playlist aquí"
-
-# Para obtener las canciones
-
-tracks <- get_playlist_tracks(playlist_id, limit = 100)
-
-# Para obtener las restantes:
-offset <- 0
-limit <- 100
-canciones <- data.frame()
-repeat {
-  batch <- get_playlist_tracks(playlist_id, limit = limit, offset = offset)
-  if (nrow(batch) == 0) break
-  canciones <- bind_rows(canciones, batch)
-  offset <- offset + limit
-}
-#Finalmente las unimos:
-
-canciones_final <- bind_rows(canciones2, canciones)
-```
-
-Ahora que tenemos todas las canciones, vamos a ver quienes son los top 20 artistas que más se repiten, para ello creamos una lista y un vector para poder hacer el gráfico:
-
-``` r
-lista_artistas <- map(tracks$track.artists, ~ .x$name)
-
-vector_artistas <- unlist(lista_artistas)
-```
-
-Luego, creo una base para contar los artistas que se repiten
-
-``` r
-conteo_artistas <- data.frame(artista = vector_artistas) |> 
-group_by(artista) |> 
-summarise(canciones = n()) |> 
-arrange(desc(canciones))
-```
-
-Ahora vamos a gráficar el top  de los artistas que más se repiten en mi playlist de canciones favoritas:
-
-``` r
-ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = canciones)) +
-  geom_col(fill = "#800020") +  
-  geom_text(aes(label = canciones), hjust = -0.2, size = 4, family = "Georgia") + # etiquetas de cantidad
-  coord_flip() +
-  labs(
-    title = "🎶 Artistas más repetidos en la playlist",
-    x = "Artista",
-    y = "Número de canciones (incluye colaboraciones)"
-  ) +
-  theme_minimal(base_size = 14, base_family = "Georgia") +
-  theme(
-    plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
-    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
-    axis.text.y = element_text(size = 12),
-    axis.title = element_text(face = "bold"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.y = element_blank(),
-    plot.background = element_rect(fill = "grey", color = NA)
-  )
-```
-## Top 20 :o
+En la tarea 1 pude ver cuales eran los artistas que más se repetían en mi playlist de canciones favoritas, dando como resultado el siguiente gráfico.
 
 ![Top 20 artistas](output/Artista+.png)
 
-En el gráfico podemos ver como A Day To Remember tiene la delantera con 18 canciones, lo cual tiene sentido porque son mi banda favorita desde los 10 años. Le sigue de cerca Noah Kahan y Kendrick, que han sido parte del soundtrack de mi vida desde que surgieron. Luego Ariana y Taylor reinas del pop y cierran bandas y artistas de mi epoca hardcore y mi era poplolita.
+Pero, todavía estaba muy lejos de tener al menos un indicio de cual de todas esas canciones es precisamente mi favorita. Así que en esta tarea 2 me propuse saber, al menos, cuál de todas estas canciones es la que más he escuchado. Para eso, descargué mis datos de reproducción de spotify, a continuación les dejo todo lo que hice.
+
+# Tarea 2:
+
+Ya tenemos como base la lista de canciones que contiene mi playlist, junto a todos los datos adicionales que me entregó la API de Spotify. Ahora, el gran problema es que los datos de reproducción que te envía Spotify vienen en formato JSON.
+
+Entre el pánico de no saber trabajar con ese formato, un angel del cielo bajó (Felipe Davis) que es igual de ñoño musical que yo y me recomendó usar https://jsoneditoronline.org/ para transformar los datos a CSV, un formato que ya estoy más familiarizado. (Spoiler: igual tuve problemas con la página, pero fueron solucionados como explicaré más adelante).
+
+Así que como siempre, cargaremos las librerías que utilizaré:
+
+``` r
+library(tidyverse) #dios t bendiga tidyverse
+library(ggplot2)
+```
+
+# Subir los datos de Spotify a R
+
+El primer problema lo encontré cuando quería subir los datos de Spotify. Como eran tantos, la página no soportó y tuve que hace pequeños archivos y luego unirlos. Lo logré unir con este código
+
+``` r
+ruta_historial <- "input" # Asegurarse que así se llama la carpeta en el directorio que están trabajando
+
+archivos_historial <- list.files(ruta_historial, pattern = "*.csv", full.names = TRUE)
+
+historial <- archivos_historial |> 
+  map_dfr(read_csv)
+```
+# Juntarla con la otra base de datos y filtrar las canciones
+
+Para juntarlas, llamé a la otra base de datos que ya tenía antes y la filtré solo por el nombre de las canciones. Así, cuando las juntara no se me sumen canciones que no estaban en la Playlist.
+
+``` r
+playlist <- read_csv("input/canciones_playlist.csv")
+
+# Dejar solo el nombre de las canciones
+
+playlist <- playlist |> 
+  select(track.name)
+  
+historial_playlist <- historial |> 
+  filter(`master_metadata_track_name` %in% playlist$track.name)
+```
+
+# Base de datos oficial
+
+Ahora con las canciones filtradas podemos crear nuestra base de datos con el N° de reproducción de cada canción de la siguiente forma:
+
+``` r
+recuento <- historial_playlist |> 
+  group_by(master_metadata_track_name) |> 
+  summarise(
+    reproducciones = n(),
+    artista = first(master_metadata_album_artist_name)
+  ) |> 
+  arrange(desc(reproducciones))
+
+write_csv(recuento, "data/recuento_playlist.csv")
+```
+# Gráficos <3
+
+```{r}
+# Canciones más escuchadas
+
+recuento |> 
+  arrange(desc(reproducciones)) |>
+  head(15) |> 
+  ggplot(aes(x = reorder(master_metadata_track_name, reproducciones), y = reproducciones)) +
+  geom_col(fill = "#800020") + 
+  coord_flip() +
+  geom_label(aes(label = artista),
+             hjust = 1.05,
+             size = 3,
+             color = "white",
+             fill = "black",
+             label.size = 0) +
+  geom_text(aes(label = reproducciones), 
+            hjust = -0.2,
+            size = 3.5) +
+  labs(
+    title = "Canciones más escuchadas de la playlist <3",
+    x = "Canción",
+    y = "Número de reproducciones"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 16),
+    plot.title.position = "plot"
+  )
+
+ggsave("output/canciones_mas_escuchadas_playlist.png", width = 8, height = 6)
+```
+```{r}
+
+# Artistas con más reproducciones
+
+recuento |> 
+  group_by(artista) |> 
+  summarise(total_reproducciones = sum(reproducciones)) |> 
+  arrange(desc(total_reproducciones)) %>%
+  head(15) %>%
+  ggplot(aes(x = reorder(artista, total_reproducciones),
+             y = total_reproducciones)) +
+  geom_col(fill = "#800020") +
+  coord_flip() +
+  geom_text(aes(label = total_reproducciones),
+            hjust = -0.2,
+            size = 3.5) +
+  labs(
+    title = "🎤 Artistas más reproducidos de la playlist",
+    x = "Artista",
+    y = "Total de reproducciones"
+  ) +
+  theme_minimal(base_family = "Calibri") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 16)
+  )
+ggsave("output/artistas_mas_reproducidos_playlist.png", width = 9, height = 6)
+```
+
+Dando como resultado lo siguiente:
+

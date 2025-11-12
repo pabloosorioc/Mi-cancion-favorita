@@ -1,9 +1,8 @@
-## Librerías
+# Librerías
 
 ```{r}
 library(tidyverse)
-library(treemapify)
-library(RColorBrewer)
+library(ggplot2)
 ```
 
 # Unir todas las bases del historial de escuchas de Spotify
