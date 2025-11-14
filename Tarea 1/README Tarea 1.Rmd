@@ -99,4 +99,6 @@ ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = cancion
   )
 ```
 
+C:/output/Artista+.png
+
 Con esto, podemos ver en el gráfico que el artista que más se repite es A Day To Remember, lo cual tiene mucho sentido puesto que es mi banda favorita desde los 12 años. Lo sigue Noah Kahan y Kendrick Lamar, lo que es sorprendente considerando que el primero es un artista relativamente nuevo y Kendrick lo sigo desde el 2016 aproximadamente. Finalmente están Ariana y Taylor que son de mi época pop lolita. 
