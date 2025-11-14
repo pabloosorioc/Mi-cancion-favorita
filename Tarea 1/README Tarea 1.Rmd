@@ -1,5 +1,5 @@
 ## PROYECTO: Mi canción favorita
-
+Disclaimer: Profe, había editado el README para agregar las cosas de la tarea 2, tenía un borrador guardado pero le faltaban muchas cosas, así que este es el README que pude hacer en base al borrador que tenía y a lo que mi cerebro recordaba.
 #Contexto
 
 En el ramo de Medición y Análisis Dimensional de Datos Políticos nos dieron como tarea mostrar básicamente que aprendimos. Como era temática libre, se me ocurrió determinar cuál es mi canción favorita.
