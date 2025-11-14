@@ -6,7 +6,6 @@ library(ggplot2)
 library(spotifyr)
 library(dplyr)
 library(purrr)
-library(kableExtra)
 library(stringr)
 library(tidyr)
 

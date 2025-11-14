@@ -1,29 +1,102 @@
----
-title: "Borrador readme"
-output: html_document
-date: "2025-10-24"
----
+## PROYECTO: Mi canción favorita
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#Contexto
+
+En el ramo de Medición y Análisis Dimensional de Datos Políticos nos dieron como tarea mostrar básicamente que aprendimos. Como era temática libre, se me ocurrió determinar cuál es mi canción favorita.
+
+# Tarea 1
+
+Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para mayor contexto, tengo una playlist de canciones que yo considero como mis favoritas, pero no la tengo ordenada bajo ningún parámetro. La idea es que de aquí a que terminen las tareas poder ordenarlas.
+
+Primero, cargamos las librerías:
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(spotifyr)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(tidyr)
 ```
 
-## R Markdown
+Para obtener la información de las canciones se usa la API de Spotify. Para eso hay que crearse una cuenta como desarrollador y obtener las credenciales (Client ID y Client Secret). Con estas, se puede configurar R:
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxx')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxx')
+# Se pone el token de acceso:
+access_token <- get_spotify_access_token()
 ```
 
-## Including Plots
+Con todo esdto, se pone el ID de la playlist. En mi caso dejaré el link de mi playlist donde se puede obtener el ID: https://open.spotify.com/playlist/74K2s9BYNZgJiaKUwJciCL?si=e9990c03d7ba47b0
 
-You can also embed plots, for example:
+Con esto, se debe poner el ID de la playlist como objeto:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+playlist_id <- "xxxxxxxxxxx"
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Para obtener las canciones, use la función de spotifyr, pero esta solo permitía obtener las 100 primeras. Como mi playlist eran más de 200 canciones tuve que hacer un bucle. Finalmente quedé con 2 bases y las junté de la siguiente forma:
+
+```{r}
+canciones2 <- get_playlist_tracks(playlist_id) #100 primeras
+
+offset <- 0
+limit <- 100
+canciones <- data.frame()
+repeat {
+  batch <- get_playlist_tracks(playlist_id, limit = limit, offset = offset)
+  if (nrow(batch) == 0) break
+  canciones <- bind_rows(canciones, batch)
+  offset <- offset + limit
+}# el resto
+
+# Unirlas
+canciones_final <- bind_rows(canciones2, canciones)
+
+save(canciones_final, file = "data/canciones_playlist.RData") #Guardar para el futuro
+```
+
+Ahora, quería saber primero que artista era el que más se repetía en la playlist para comenzar a tener un indicio de mi canción favorita. Para eso hice una base con el artista y la cantidad de veces que se repetía (contando colaboraciones):
+
+```{r}
+lista_artistas <- map(canciones_final$track.artists, ~ .x$name)
+
+vector_artistas <- unlist(lista_artistas)
+
+conteo_artistas <- data.frame(artista = vector_artistas) |> 
+  group_by(artista) |> 
+  summarise(canciones = n()) |> 
+  arrange(desc(canciones))
+
+# Guardamos ese archivo
+
+write_csv(conteo_artistas, "data/conteo_artistas.csv")
+```
+
+Y finalmente graficamos el top 20 de artistas que más se repiten:
+
+```{r}
+ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = canciones)) +
+  geom_col(fill = "#800020") +  # color burdeo 🍷
+  geom_text(aes(label = canciones), hjust = -0.2, size = 4, family = "Georgia") + # etiquetas de cantidad
+  coord_flip() +
+  labs(
+    title = "🎶 Artistas más repetidos en la playlist",
+    x = "Artista",
+    y = "Número de canciones (incluye colaboraciones)"
+  ) +
+  theme_minimal(base_size = 14, base_family = "Georgia") +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    plot.background = element_rect(fill = "grey", color = NA)
+  )
+```
+
+Con esto, podemos ver en el gráfico que el artista que más se repite es A Day To Remember, lo cual tiene mucho sentido puesto que es mi banda favorita desde los 12 años. Lo sigue Noah Kahan y Kendrick Lamar, lo que es sorprendente considerando que el primero es un artista relativamente nuevo y Kendrick lo sigo desde el 2016 aproximadamente. Finalmente están Ariana y Taylor que son de mi época pop lolita. 
