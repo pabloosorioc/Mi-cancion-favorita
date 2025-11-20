@@ -1,33 +1,35 @@
-## Mi canción favorita
+# Mi canción favorita
 
-# Contexto
+## Contexto
 
 En el ramo de Medición y análisis dimensional de datos políticos nos dieron una tarea para mostrar nuestro aprendizaje en R. Como la tarea era de temática libre se me ocurrió determinar cual es mi canción favorita.
 
-En la tarea 1 pude ver cuales eran los artistas que más se repetían en mi playlist de canciones favoritas, dando como resultado el siguiente gráfico.
+### Tarea 1
 
-![Top 20 artistas](output/Artista+.png)
+En la **Tarea 1** pude ver cuales eran los artistas que más se repetían en mi playlist de canciones favoritas, dando como resultado el siguiente gráfico.
 
-Pero, todavía estaba muy lejos de tener al menos un indicio de cual de todas esas canciones es precisamente mi favorita. Así que en esta tarea 2 me propuse saber, al menos, cuál de todas estas canciones es la que más he escuchado. Para eso, descargué mis datos de reproducción de spotify, a continuación les dejo todo lo que hice.
+![Top 20 artistas](/Tarea%201/output/artistas_mas_repetidos_playlist.png)
 
-# Tarea 2:
+Pero, todavía estaba muy lejos de tener al menos un indicio de cual de todas esas canciones es precisamente mi favorita. Así que en la Tarea 2 me propuse saber, al menos, **cuál de todas estas canciones es la que más he escuchado**. Para eso, descargué mis datos de reproducción de spotify, a continuación les dejo todo lo que hice.
 
-Ya tenemos como base la lista de canciones que contiene mi playlist, junto a todos los datos adicionales que me entregó la API de Spotify. Ahora, el gran problema es que los datos de reproducción que te envía Spotify vienen en formato JSON.
+### Tarea 2
 
-Entre el pánico de no saber trabajar con ese formato, un angel del cielo bajó (Felipe Davis) que es igual de ñoño musical que yo y me recomendó usar https://jsoneditoronline.org/ para transformar los datos a CSV, un formato que ya estoy más familiarizado. (Spoiler: igual tuve problemas con la página, pero fueron solucionados como explicaré más adelante).
+Ya tenemos como base la lista de canciones que contiene mi playlist, junto a todos los datos adicionales que me entregó la API de Spotify. Ahora, el gran problema es que los datos de reproducción que te envía Spotify vienen en **formato JSON**.
+
+Entre el pánico de no saber trabajar con ese formato, un angel del cielo bajó (Felipe Davis) que es igual de ñoño musical que yo y me recomendó usar <https://jsoneditoronline.org/> para transformar los datos a CSV, un formato que ya estoy más familiarizado. (Spoiler: igual tuve problemas con la página, pero fueron solucionados como explicaré más adelante).
 
 Así que como siempre, cargaremos las librerías que utilizaré:
 
-``` r
+```{r}
 library(tidyverse) #dios t bendiga tidyverse
 library(ggplot2)
 ```
 
-# Subir los datos de Spotify a R
+#### Subir los datos de Spotify a R
 
 El primer problema lo encontré cuando quería subir los datos de Spotify. Como eran tantos, la página no soportó y tuve que hace pequeños archivos y luego unirlos. Lo logré unir con este código
 
-``` r
+```{r}
 ruta_historial <- "input" # Asegurarse que así se llama la carpeta en el directorio que están trabajando
 
 archivos_historial <- list.files(ruta_historial, pattern = "*.csv", full.names = TRUE)
@@ -35,11 +37,12 @@ archivos_historial <- list.files(ruta_historial, pattern = "*.csv", full.names =
 historial <- archivos_historial |> 
   map_dfr(read_csv)
 ```
-# Juntarla con la otra base de datos y filtrar las canciones
+
+#### Juntarla con la otra base de datos y filtrar las canciones
 
 Para juntarlas, llamé a la otra base de datos que ya tenía antes y la filtré solo por el nombre de las canciones. Así, cuando las juntara no se me sumen canciones que no estaban en la Playlist.
 
-``` r
+```{r}
 playlist <- read_csv("input/canciones_playlist.csv")
 
 # Dejar solo el nombre de las canciones
@@ -51,11 +54,11 @@ historial_playlist <- historial |>
   filter(`master_metadata_track_name` %in% playlist$track.name)
 ```
 
-# Base de datos oficial
+#### Base de datos oficial
 
 Ahora con las canciones filtradas podemos crear nuestra base de datos con el N° de reproducción de cada canción de la siguiente forma:
 
-``` r
+```{r}
 recuento <- historial_playlist |> 
   group_by(master_metadata_track_name) |> 
   summarise(
@@ -63,10 +66,9 @@ recuento <- historial_playlist |>
     artista = first(master_metadata_album_artist_name)
   ) |> 
   arrange(desc(reproducciones))
-
-write_csv(recuento, "data/recuento_playlist.csv")
 ```
-# Gráficos <3
+
+#### Gráficos \<3
 
 ```{r}
 # Canciones más escuchadas
@@ -96,9 +98,8 @@ recuento |>
     plot.title = element_text(face = "bold", size = 16),
     plot.title.position = "plot"
   )
-
-ggsave("output/canciones_mas_escuchadas_playlist.png", width = 8, height = 6)
 ```
+
 ```{r}
 
 # Artistas con más reproducciones
@@ -125,19 +126,17 @@ recuento |>
     axis.text.x = element_text(angle = 45, hjust = 1),
     plot.title = element_text(face = "bold", size = 16)
   )
-ggsave("output/artistas_mas_reproducidos_playlist.png", width = 9, height = 6)
+
 ```
 
 Dando como resultado lo siguiente:
 
-<img width="2400" height="1800" alt="canciones_mas_escuchadas_playlist" src="https://github.com/user-attachments/assets/0af71a44-df98-4112-8ee4-6157c3d72d99" />
+![](/Tarea%202/output/canciones_mas_escuchadas_playlist.png)
 
 En este primer gráfico podemos ver que la canción más reproducida es All I Want de A Day To Remember, seguido por The Middle de Jimmy Eat World y HUMBLE. de Kendrick Lamar. Aclarar que estos datos son solo desde que tengo Spotify (2016 a la fecha), ya vamos viendo un top bastante consolidado solo en base a reproducción.
 
-<img width="2700" height="1800" alt="artistas_mas_reproducidos_playlist" src="https://github.com/user-attachments/assets/85b6c951-e3fa-4e15-9cd9-5f54eb1eee1a" />
+![](/Tarea%202/output/artistas_mas_reproducidos_playlist.png)
 
 Ahora, en este gráfico ya podemos ver algo similar al gráfico de la Tarea 1, donde mi artista más escuchado de la Playlist es A Day To Remember, lo cual no me sorprende para nada. Si me sorprende que Noah Kahan se haya colado al top 3, siendo que es un artista relativamente nuevo (lo escucho desde 2020, antes que se hiciera famosillo) logró superar a ídolas del pop como Taylos Swift y Ariana Grande. Creo que si hubiese tenido Spotify antes Paramore, Pierce The Veil y Twenty One Pilots estarían mucho más arriba, pero nada que hacerle.
 
 Ya estoy cerca de definir cual es mi canción favorita. Para la tarea 3 planeo sumarle más variables al análisis con el objetivo final de ordenar esta playlist desde la que más me gusta para abajo.
-
-

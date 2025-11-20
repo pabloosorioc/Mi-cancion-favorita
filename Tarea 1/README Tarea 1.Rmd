@@ -1,12 +1,12 @@
 ## PROYECTO: Mi canción favorita
-Disclaimer: Profe, había editado el README para agregar las cosas de la tarea 2, tenía un borrador guardado pero le faltaban muchas cosas, así que este es el README que pude hacer en base al borrador que tenía y a lo que mi cerebro recordaba.
+
 #Contexto
 
-En el ramo de Medición y Análisis Dimensional de Datos Políticos nos dieron como tarea mostrar básicamente que aprendimos. Como era temática libre, se me ocurrió determinar cuál es mi canción favorita.
+En el ramo de Medición y Análisis Dimensional de Datos Políticos nos dieron como tarea mostrar básicamente que aprendimos. Como era temática libre, se me ocurrió determinar **cuál es mi canción favorita**.
 
 # Tarea 1
 
-Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para mayor contexto, tengo una playlist de canciones que yo considero como mis favoritas, pero no la tengo ordenada bajo ningún parámetro. La idea es que de aquí a que terminen las tareas poder ordenarlas.
+Para esta tarea 1, voy a comenzar observando las características de mis canciones favoritas. Para mayor contexto, tengo una **playlist de canciones que yo considero como mis favoritas**, pero no la tengo ordenada bajo ningún parámetro. La idea es que de aquí a que terminen las tareas poder ordenarlas.
 
 Primero, cargamos las librerías:
 
@@ -23,18 +23,18 @@ library(tidyr)
 Para obtener la información de las canciones se usa la API de Spotify. Para eso hay que crearse una cuenta como desarrollador y obtener las credenciales (Client ID y Client Secret). Con estas, se puede configurar R:
 
 ```{r}
-Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxx')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxx')
+Sys.setenv(SPOTIFY_CLIENT_ID = 'XXXX')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = 'XXXX')
 # Se pone el token de acceso:
 access_token <- get_spotify_access_token()
 ```
 
-Con todo esdto, se pone el ID de la playlist. En mi caso dejaré el link de mi playlist donde se puede obtener el ID: https://open.spotify.com/playlist/74K2s9BYNZgJiaKUwJciCL?si=e9990c03d7ba47b0
+Con todo esdto, se pone el ID de la playlist. En mi caso dejaré el link de mi playlist donde se puede obtener el ID: <https://open.spotify.com/playlist/74K2s9BYNZgJiaKUwJciCL?si=e9990c03d7ba47b0>
 
 Con esto, se debe poner el ID de la playlist como objeto:
 
 ```{r}
-playlist_id <- "xxxxxxxxxxx"
+playlist_id <- "74K2s9BYNZgJiaKUwJciCL"
 ```
 
 Para obtener las canciones, use la función de spotifyr, pero esta solo permitía obtener las 100 primeras. Como mi playlist eran más de 200 canciones tuve que hacer un bucle. Finalmente quedé con 2 bases y las junté de la siguiente forma:
@@ -44,7 +44,9 @@ canciones2 <- get_playlist_tracks(playlist_id) #100 primeras
 
 offset <- 0
 limit <- 100
+
 canciones <- data.frame()
+
 repeat {
   batch <- get_playlist_tracks(playlist_id, limit = limit, offset = offset)
   if (nrow(batch) == 0) break
@@ -56,6 +58,12 @@ repeat {
 canciones_final <- bind_rows(canciones2, canciones)
 
 save(canciones_final, file = "data/canciones_playlist.RData") #Guardar para el futuro
+```
+
+En el caso de no tener acceso a Spotify Developer, sólo carga la base de datos:
+
+```{r}
+load("../data/canciones_playlist.RData")
 ```
 
 Ahora, quería saber primero que artista era el que más se repetía en la playlist para comenzar a tener un indicio de mi canción favorita. Para eso hice una base con el artista y la cantidad de veces que se repetía (contando colaboraciones):
@@ -78,7 +86,8 @@ write_csv(conteo_artistas, "data/conteo_artistas.csv")
 Y finalmente graficamos el top 20 de artistas que más se repiten:
 
 ```{r}
-ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = canciones)) +
+ggplot(conteo_artistas[1:20, ], 
+       aes(x = reorder(artista, canciones), y = canciones)) +
   geom_col(fill = "#800020") +  # color burdeo 🍷
   geom_text(aes(label = canciones), hjust = -0.2, size = 4, family = "Georgia") + # etiquetas de cantidad
   coord_flip() +
@@ -99,6 +108,8 @@ ggplot(conteo_artistas[1:20, ], aes(x = reorder(artista, canciones), y = cancion
   )
 ```
 
-C:/output/Artista+.png
+```{r}
+ggsave("output/artistas_mas_repetidos_playlist.png", width = 9, height = 6)
+```
 
-Con esto, podemos ver en el gráfico que el artista que más se repite es A Day To Remember, lo cual tiene mucho sentido puesto que es mi banda favorita desde los 12 años. Lo sigue Noah Kahan y Kendrick Lamar, lo que es sorprendente considerando que el primero es un artista relativamente nuevo y Kendrick lo sigo desde el 2016 aproximadamente. Finalmente están Ariana y Taylor que son de mi época pop lolita. 
+Con esto, podemos ver en el gráfico que el artista que más se repite es A Day To Remember, lo cual tiene mucho sentido puesto que es mi banda favorita desde los 12 años. Lo sigue Noah Kahan y Kendrick Lamar, lo que es sorprendente considerando que el primero es un artista relativamente nuevo y Kendrick lo sigo desde el 2016 aproximadamente. Finalmente están Ariana y Taylor que son de mi época pop lolita.
